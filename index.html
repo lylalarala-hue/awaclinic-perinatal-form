@@ -1791,6 +1791,30 @@
         free_text:               v('free_text'),
         // --- Phase 2 実測値 ---
         pgq_gate: rv('pgq_gate'),
+        pgq_q1:  (() => { const v = document.querySelector('input[name="pgq_q1"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q2:  (() => { const v = document.querySelector('input[name="pgq_q2"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q3:  (() => { const v = document.querySelector('input[name="pgq_q3"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q4:  (() => { const v = document.querySelector('input[name="pgq_q4"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q5:  (() => { const v = document.querySelector('input[name="pgq_q5"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q6:  (() => { const v = document.querySelector('input[name="pgq_q6"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q7:  (() => { const v = document.querySelector('input[name="pgq_q7"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q8:  (() => { const v = document.querySelector('input[name="pgq_q8"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q9:  (() => { const v = document.querySelector('input[name="pgq_q9"]:checked')?.value;  return v !== undefined ? Number(v) : null; })(),
+        pgq_q10: (() => { const v = document.querySelector('input[name="pgq_q10"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q11: (() => { const v = document.querySelector('input[name="pgq_q11"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q12: (() => { const v = document.querySelector('input[name="pgq_q12"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q13: (() => { const v = document.querySelector('input[name="pgq_q13"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q14: (() => { const v = document.querySelector('input[name="pgq_q14"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q15: (() => { const v = document.querySelector('input[name="pgq_q15"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q16: (() => { const v = document.querySelector('input[name="pgq_q16"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q17: (() => { const v = document.querySelector('input[name="pgq_q17"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q18: (() => { const v = document.querySelector('input[name="pgq_q18"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q20: (() => { const v = document.querySelector('input[name="pgq_q20"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q21: (() => { const v = document.querySelector('input[name="pgq_q21"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q22: (() => { const v = document.querySelector('input[name="pgq_q22"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q23: (() => { const v = document.querySelector('input[name="pgq_q23"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q24: (() => { const v = document.querySelector('input[name="pgq_q24"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
+        pgq_q25: (() => { const v = document.querySelector('input[name="pgq_q25"]:checked')?.value; return v !== undefined ? Number(v) : null; })(),
         pgq_q19: (() => {
           const val = document.querySelector('input[name="pgq_q19"]:checked')?.value;
           return val !== undefined ? Number(val) : null;
@@ -2462,10 +2486,24 @@
       if (!DRIVE_SCRIPT_URL) {
         _driveStatus('⚠ DRIVE_SCRIPT_URL が未設定です。', 'err'); return;
       }
-      _driveStatus('📤 保存中… （10〜20秒かかります）', 'info');
+      _driveStatus('保存中… （10〜20秒かかります）', 'info');
       try {
+        const formData = collectFormData();
+        const pts = window._bmPainPoints || [];
+
+        // ptsからpain列をformDataに展開して送信
+        for (let i = 0; i < 5; i++) {
+          const pt  = pts[i] || null;
+          const num = i + 1;
+          formData['pain' + num + '_label']  = pt ? (pt.pro || pt.label || '') : '';
+          formData['pain' + num + '_score']  = pt ? (pt.score !== null && pt.score !== '' ? pt.score : '') : '';
+          formData['pain' + num + '_action'] = pt ? (pt.aggravates || '') : '';
+          formData['pain' + num + '_since']  = pt ? (pt.since || '') : '';
+        }
+        formData['pain_total_count'] = pts.filter(p => p && (p.pro || p.label)).length;
+
         const result = await _saveViaDriveJsonp({
-          type: 'all', data: collectFormData(), pts: window._bmPainPoints || []
+          type: 'all', data: formData, pts: pts
         });
         if (result.success) {
           _driveStatus('✅ スプレッドシートとDriveへの保存が完了しました', 'ok');
