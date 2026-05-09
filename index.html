@@ -2417,7 +2417,7 @@
       const pvBar = document.createElement('div');
       pvBar.id = '_pv_bar';
       pvBar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;height:52px;background:#f0e8f8;border-bottom:1px solid #c8b8e0;display:flex;align-items:center;padding:0 16px;gap:12px;font-family:-apple-system,sans-serif';
-      pvBar.innerHTML = `<button onclick="document.getElementById('print-view').classList.remove('show');document.getElementById('_pv_bar').remove()" style="background:#bbb;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600">閉じる</button><button onclick="_sharePrintHTML()" style="background:#9b8ec4;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600">🖨 印刷 / PDF</button><span style="font-size:11px;color:#666">共有シート → プリントまたは保存</span>`;
+      pvBar.innerHTML = `<button onclick="document.getElementById('print-view').classList.remove('show');document.getElementById('_pv_bar').remove()" style="background:#bbb;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600">閉じる</button><button onclick="window.print()" style="background:#9b8ec4;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:600">印刷</button>`;
       document.body.appendChild(pvBar);
       document.getElementById('print-view').classList.add('show');
     }
