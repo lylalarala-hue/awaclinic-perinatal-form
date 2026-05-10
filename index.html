@@ -1819,7 +1819,14 @@
           const val = document.querySelector('input[name="pgq_q19"]:checked')?.value;
           return val !== undefined ? Number(val) : null;
         })(),
-        pgq_activity_score: (() => {
+        pgq_q19_skipped: (() => {
+          if (rv('pgq_gate') !== 'yes') return null;
+          const val = document.querySelector('input[name="pgq_q19"]:checked')?.value;
+          return val === undefined ? 1 : 0;
+        })(),
+
+        // 活動制限サブスケール（Q1〜Q20）合計点・%
+        pgq_activity_raw: (() => {
           if (rv('pgq_gate') !== 'yes') return null;
           let s = 0;
           for (let i = 1; i <= 20; i++) {
@@ -1830,39 +1837,66 @@
           }
           return s;
         })(),
-        pgq_time_score: (() => {
+        pgq_activity_pct: (() => {
           if (rv('pgq_gate') !== 'yes') return null;
           let s = 0;
-          for (let i = 21; i <= 22; i++) {
+          const q19val = document.querySelector('input[name="pgq_q19"]:checked')?.value;
+          const maxAct = q19val === undefined ? 57 : 60;
+          for (let i = 1; i <= 20; i++) {
+            const val = document.querySelector(`input[name="pgq_q${i}"]:checked`)?.value;
+            if (i === 19) { if (val !== undefined) s += Number(val); continue; }
+            if (val === undefined) return null;
+            s += Number(val);
+          }
+          return +((s / maxAct * 100).toFixed(1));
+        })(),
+
+        // 症状サブスケール（Q21〜Q25）合計点・%
+        pgq_symptom_raw: (() => {
+          if (rv('pgq_gate') !== 'yes') return null;
+          let s = 0;
+          for (let i = 21; i <= 25; i++) {
             const val = document.querySelector(`input[name="pgq_q${i}"]:checked`)?.value;
             if (val === undefined) return null;
             s += Number(val);
           }
           return s;
         })(),
-        pgq_impact_score: (() => {
+        pgq_symptom_pct: (() => {
           if (rv('pgq_gate') !== 'yes') return null;
           let s = 0;
-          for (let i = 23; i <= 25; i++) {
+          for (let i = 21; i <= 25; i++) {
             const val = document.querySelector(`input[name="pgq_q${i}"]:checked`)?.value;
             if (val === undefined) return null;
             s += Number(val);
           }
-          return s;
+          return +((s / 15 * 100).toFixed(1));
         })(),
-        pgq_total_score: (() => {
+
+        // 総合スコア（Q1〜Q25）合計点・%
+        pgq_total_raw: (() => {
           if (rv('pgq_gate') !== 'yes') return null;
-          let total = 0, maxScore = 75;
+          let s = 0;
           for (let i = 1; i <= 25; i++) {
             const val = document.querySelector(`input[name="pgq_q${i}"]:checked`)?.value;
-            if (i === 19) {
-              if (val === undefined) { maxScore = 72; continue; }
-            } else {
-              if (val === undefined) return null;
-            }
-            total += Number(val);
+            if (i === 19) { if (val !== undefined) s += Number(val); continue; }
+            if (val === undefined) return null;
+            s += Number(val);
           }
-          return +((total / maxScore * 100).toFixed(1));
+          return s;
+        })(),
+        pgq_total_pct: (() => {
+          if (rv('pgq_gate') !== 'yes') return null;
+          let s = 0;
+          const q19val = document.querySelector('input[name="pgq_q19"]:checked')?.value;
+          const maxTotal = q19val === undefined ? 72 : 75;
+          for (let i = 1; i <= 25; i++) {
+            const val = document.querySelector(`input[name="pgq_q${i}"]:checked`)?.value;
+            if (i === 19) { if (val !== undefined) s += Number(val); continue; }
+            if (val === undefined) return null;
+            s += Number(val);
+          }
+          return +((s / maxTotal * 100).toFixed(1));
         })(),
         iciq_q1: rv('iciq_q1') !== '' ? Number(rv('iciq_q1')) : null,
         iciq_q2: rv('iciq_q2') !== '' ? Number(rv('iciq_q2')) : null,
@@ -2011,7 +2045,7 @@
         '現在の困りごと',
         '運動習慣','運動種類','運動頻度(週/回)','運動時間(分)',
         '既往歴','サポート','サポート続柄',
-        'PGQゲート','PGQ活動スコア(Q1-20)','PGQ時間帯スコア(Q21-22)','PGQ影響スコア(Q23-25)','PGQ総合スコア',
+        'PGQゲート','PGQ Q19スキップ','PGQ活動合計点(0-60)','PGQ活動%','PGQ症状合計点(0-15)','PGQ症状%','PGQ総合合計点(0-75)','PGQ総合%',
         'ICIQ Q1','ICIQ Q2','ICIQ Q3','ICIQスコア','ICIQタイプ',
         'EPDS Q1','EPDS Q2','EPDS Q3','EPDS Q4','EPDS Q5',
         'EPDS Q6','EPDS Q7','EPDS Q8','EPDS Q9','EPDS Q10',
@@ -2056,7 +2090,7 @@
         data.exercise_type, data.exercise_freq, data.exercise_duration,
         data.medical_history,
         tr(yesNoMap, data.support), data.support_who,
-        data.pgq_gate ?? '', data.pgq_activity_score ?? '', data.pgq_time_score ?? '', data.pgq_impact_score ?? '', data.pgq_total_score ?? '',
+        data.pgq_gate ?? '', data.pgq_q19_skipped ?? '', data.pgq_activity_raw ?? '', data.pgq_activity_pct ?? '', data.pgq_symptom_raw ?? '', data.pgq_symptom_pct ?? '', data.pgq_total_raw ?? '', data.pgq_total_pct ?? '',
         data.iciq_q1 ?? '', data.iciq_q2 ?? '', data.iciq_q3 ?? '', data.iciq_score ?? '', data.iciq_type ?? '',
         data.epds_q1 ?? '', data.epds_q2 ?? '', data.epds_q3 ?? '', data.epds_q4 ?? '', data.epds_q5 ?? '',
         data.epds_q6 ?? '', data.epds_q7 ?? '', data.epds_q8 ?? '', data.epds_q9 ?? '', data.epds_q10 ?? '',
@@ -2373,7 +2407,7 @@
           <div class="pv-sec-hd">骨盤周りの痛みに関する質問（PGQ）</div>
           <div class="pv-sec-bd">
             ${data.pgq_gate === 'yes'
-              ? `活動スコア（Q1〜Q20）：${data.pgq_activity_score ?? '—'}/60点　時間帯スコア（Q21〜Q22）：${data.pgq_time_score ?? '—'}/6点　影響スコア（Q23〜Q25）：${data.pgq_impact_score ?? '—'}/9点　総合スコア：${data.pgq_total_score ?? '—'}/100点`
+              ? `活動制限（Q1〜Q20）：${data.pgq_activity_raw ?? '—'}/60点（${data.pgq_activity_pct ?? '—'}%）　症状（Q21〜Q25）：${data.pgq_symptom_raw ?? '—'}/15点（${data.pgq_symptom_pct ?? '—'}%）　総合：${data.pgq_total_raw ?? '—'}/75点（${data.pgq_total_pct ?? '—'}%）${data.pgq_q19_skipped === 1 ? '　※Q19スキップあり（最大点補正済）' : ''}`
               : 'PGQ：対象外（骨盤帯症状の申告なし）'}
           </div>
         </div>
