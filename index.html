@@ -270,7 +270,7 @@
 
     /* ===== 任意ラベル ===== */
     .optional-badge {
-      font-size: 0.75rem;
+      font-size: 0.875rem;
       font-weight: 400;
       color: var(--text-muted);
       margin-left: 4px;
@@ -354,7 +354,7 @@
     }
     .bm-btn-row { display:flex; gap:4px; flex-wrap:nowrap; margin:6px 0 3px; }
     .bm-btn {
-      flex:1; min-width:0; padding:9px 0; border:1.5px solid var(--btn-color,#ccc); border-radius:6px;
+      flex:1; min-width:0; min-height:44px; padding:9px 0; border:1.5px solid var(--btn-color,#ccc); border-radius:6px;
       background:#fff; color:var(--btn-color,#666); font-size:0.95rem; font-weight:700;
       font-family:inherit; cursor:pointer; transition:all 0.12s; -webkit-tap-highlight-color:transparent;
     }
@@ -1312,10 +1312,24 @@
 
     <!-- スタッフ向けボタンエリア -->
     <div>
-      <p class="text-center text-xs font-semibold tracking-widest mb-4"
+      <button type="button"
+        onclick="const a=document.getElementById('staff-action-area');a.classList.toggle('hidden');this.textContent=a.classList.contains('hidden')?'スタッフの方はこちら ▼':'スタッフエリアを閉じる ▲';"
+        class="w-full text-xs font-semibold tracking-widest py-3 rounded-xl transition-all"
+        style="color:var(--text-muted);background:transparent;border:1.5px dashed var(--border);cursor:pointer;letter-spacing:.1em;">
+        スタッフの方はこちら ▼
+      </button>
+
+      <div id="staff-action-area" class="hidden">
+      <p class="text-center text-xs font-semibold tracking-widest mt-4 mb-4"
         style="color:var(--text-muted);">— スタッフの方へ —</p>
 
       <div class="space-y-3">
+        <button type="button" onclick="saveAll()"
+          class="submit-btn w-full font-bold py-3.5 rounded-2xl shadow-md text-sm transition-all duration-150"
+          style="min-height:48px;letter-spacing:.05em;">
+          データの送信
+        </button>
+
         <button type="button" onclick="printForm()"
           class="w-full font-bold py-3.5 rounded-2xl shadow-sm text-sm transition-all duration-150"
           style="
@@ -1329,16 +1343,11 @@
           ">
           問診票の印刷
         </button>
-
-        <button type="button" onclick="saveAll()"
-          class="submit-btn w-full font-bold py-3.5 rounded-2xl shadow-md text-sm transition-all duration-150"
-          style="min-height:48px;letter-spacing:.05em;">
-          データの送信
-        </button>
       </div>
 
       <p id="drive-status" class="text-center text-xs pt-3"
         style="color:var(--text-muted);line-height:1.6;min-height:1.4em;"></p>
+      </div><!-- /staff-action-area -->
     </div>
 
   </div>
@@ -2442,7 +2451,7 @@
           <div class="pv-sec-hd">気持ちのチェック（EPDS）</div>
           <div class="pv-sec-bd">
             ${data.stage === 'postnatal'
-              ? `スコア：${data.epds_score ?? '—'}/30点　判定：${data.epds_judgment || '—'}　Q10：${data.epds_q10_flag === 1 ? '<span style="color:#c0392b;font-weight:700;">要確認（1点以上）</span>' : '陰性（0点）'}`
+              ? `スコア：${data.epds_score ?? '—'}/30点　判定：${data.epds_judgment || '—'}　Q10：${data.epds_q10_flag === null ? '—' : data.epds_q10_flag === 1 ? '<span style="color:#c0392b;font-weight:700;">要確認（1点以上）</span>' : '陰性（0点）'}`
               : 'EPDS：対象外（産前）'}
           </div>
         </div>
