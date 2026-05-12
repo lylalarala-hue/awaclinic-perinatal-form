@@ -1311,42 +1311,69 @@
     </div>
 
     <!-- スタッフ向けボタンエリア -->
-    <div>
-      <button type="button"
-        onclick="const a=document.getElementById('staff-action-area');a.classList.toggle('hidden');this.textContent=a.classList.contains('hidden')?'スタッフの方はこちら ▼':'スタッフエリアを閉じる ▲';"
-        class="w-full text-xs font-semibold tracking-widest py-3 rounded-xl transition-all"
-        style="color:var(--text-muted);background:transparent;border:1.5px dashed var(--border);cursor:pointer;letter-spacing:.1em;">
-        スタッフの方はこちら ▼
-      </button>
+    <div style="margin-top:3.5rem;">
 
-      <div id="staff-action-area" class="hidden">
-      <p class="text-center text-xs font-semibold tracking-widest mt-4 mb-4"
-        style="color:var(--text-muted);">— スタッフの方へ —</p>
-
-      <div class="space-y-3">
-        <button type="button" onclick="saveAll()"
-          class="submit-btn w-full font-bold py-3.5 rounded-2xl shadow-md text-sm transition-all duration-150"
-          style="min-height:48px;letter-spacing:.05em;">
-          データの送信
-        </button>
-
-        <button type="button" onclick="printForm()"
-          class="w-full font-bold py-3.5 rounded-2xl shadow-sm text-sm transition-all duration-150"
-          style="
-            min-height:48px;
-            border: 2px solid var(--mauve-deep);
-            background: #fff;
-            color: var(--mauve-text);
-            letter-spacing:.05em;
-            font-family:inherit;
-            cursor:pointer;
-          ">
-          問診票の印刷
-        </button>
+      <!-- セパレーター -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;">
+        <hr style="flex:1;border:none;border-top:1.5px dashed #d4bfde;">
+        <span style="font-size:0.7rem;font-weight:700;letter-spacing:.15em;color:#b0a0b8;white-space:nowrap;">STAFF ONLY</span>
+        <hr style="flex:1;border:none;border-top:1.5px dashed #d4bfde;">
       </div>
 
-      <p id="drive-status" class="text-center text-xs pt-3"
-        style="color:var(--text-muted);line-height:1.6;min-height:1.4em;"></p>
+      <!-- トグルボタン -->
+      <button type="button" id="staff-toggle-btn"
+        onclick="
+          const a=document.getElementById('staff-action-area');
+          const btn=document.getElementById('staff-toggle-btn');
+          const isNowHidden=a.classList.toggle('hidden');
+          btn.querySelector('.staff-toggle-text').textContent=isNowHidden?'スタッフ操作を開く':'スタッフ操作を閉じる';
+          btn.querySelector('.staff-toggle-arrow').textContent=isNowHidden?'▼':'▲';
+        "
+        style="
+          width:100%; min-height:52px; display:flex; align-items:center;
+          gap:10px; padding:12px 20px; border-radius:14px;
+          background:#f3eff6; border:1.5px solid #d4bfde; cursor:pointer;
+          font-family:inherit; transition:background 0.15s;
+        ">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="#7a4a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          style="flex-shrink:0;">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span class="staff-toggle-text"
+          style="flex:1;text-align:left;font-size:0.875rem;font-weight:700;color:#5a3a6a;letter-spacing:.04em;">
+          スタッフ操作を開く
+        </span>
+        <span class="staff-toggle-arrow" style="font-size:0.75rem;color:#9b78ac;">▼</span>
+      </button>
+
+      <!-- スタッフ操作エリア（折りたたみ） -->
+      <div id="staff-action-area" class="hidden" style="margin-top:1rem;">
+        <div class="space-y-3">
+          <button type="button" onclick="saveAll()"
+            class="submit-btn w-full font-bold py-3.5 rounded-2xl shadow-md text-sm transition-all duration-150"
+            style="min-height:48px;letter-spacing:.05em;">
+            データの送信
+          </button>
+
+          <button type="button" onclick="printForm()"
+            class="w-full font-bold py-3.5 rounded-2xl shadow-sm text-sm transition-all duration-150"
+            style="
+              min-height:48px;
+              border: 2px solid var(--mauve-deep);
+              background: #fff;
+              color: var(--mauve-text);
+              letter-spacing:.05em;
+              font-family:inherit;
+              cursor:pointer;
+            ">
+            問診票の印刷
+          </button>
+        </div>
+
+        <p id="drive-status" class="text-center text-xs pt-3"
+          style="color:var(--text-muted);line-height:1.6;min-height:1.4em;"></p>
       </div><!-- /staff-action-area -->
     </div>
 
