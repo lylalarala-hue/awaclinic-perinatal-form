@@ -482,6 +482,15 @@
             class="w-full rounded-lg border px-3 py-2.5 text-base"
             autocomplete="name" />
         </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1.5" style="color:var(--text);">年齢<span class="optional-badge">（任意）</span></label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="number" name="age" id="age" min="15" max="60"
+              placeholder="32" inputmode="numeric"
+              class="rounded-lg border px-3 py-2.5 text-base" style="width:90px;" />
+            <span style="color:var(--text-muted);">歳</span>
+          </div>
+        </div>
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block text-sm font-medium mb-1.5" style="color:var(--text);">身長<span class="optional-badge">（任意）</span></label>
@@ -1788,6 +1797,7 @@
           return Math.floor(diff / (1000 * 60 * 60 * 24));
         })(),
         // --- 基本情報 ---
+        age:                     v('age'),
         stage:                   rv('stage'),
         height:                  v('height'),
         current_weight:          v('current_weight'),
@@ -2342,7 +2352,7 @@
         </div>
         ${warningHtml}
         <div class="pv-title">問診票</div>
-        <p style="text-align:right;font-size:10px;margin-bottom:8px;">記録日：${dateStr}${name ? '　　氏名：' + name : ''}</p>
+        <p style="text-align:right;font-size:10px;margin-bottom:8px;">記録日：${dateStr}${name ? '　　氏名：' + name : ''}${data.age ? '　年齢：' + data.age + '歳' : ''}</p>
 
         <div class="pv-sec">
           <div class="pv-sec-hd">1. 基本情報</div>
