@@ -311,13 +311,41 @@
     }
 
     /* ===== 身体図（インライン統合）===== */
-    .bm-tab-row { display:flex; border-bottom:1px solid var(--border); }
-    .bm-tab-btn {
-      flex:1; padding:9px 0; border:none; background:transparent; cursor:pointer;
-      font-size:14px; font-weight:700; letter-spacing:1px; color:var(--text-muted);
-      border-bottom:2px solid transparent; transition:color .15s,border-color .15s; font-family:inherit;
+    .bm-pill-row {
+      display: flex;
+      justify-content: center;
+      padding: 10px 0 4px;
     }
-    .bm-tab-btn.active { color:var(--mauve-deep); border-bottom-color:var(--mauve-deep); }
+    .bm-pill-inner {
+      display: flex;
+      background: #EAD8EA;
+      border-radius: 100px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .bm-pill-btn {
+      padding: 9px 24px;
+      border-radius: 100px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      color: #8A7A8A;
+      background: transparent;
+      transition: background 0.15s, color 0.15s;
+    }
+    .bm-pill-btn.active {
+      background: #8A5A8A;
+      color: #fff;
+    }
+    .bm-pill-hint {
+      font-size: 12px;
+      color: #9B6B9B;
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
     .bm-svg-area {
       display:flex; flex-direction:column; align-items:center; padding:10px 0 6px; background:#fdf8fd;
     }
@@ -747,10 +775,15 @@
                 <li>・ 番号マーカーをタップすると削除できます</li>
               </ul>
             </div>
-            <div class="bm-tab-row">
-              <button type="button" class="bm-tab-btn active" id="bm-tab-front" onclick="bmSwitchView('front')">前から · Front</button>
-              <button type="button" class="bm-tab-btn"        id="bm-tab-back"  onclick="bmSwitchView('back')">後ろから · Back</button>
+            <div class="bm-pill-row">
+              <div class="bm-pill-inner">
+                <button type="button" class="bm-pill-btn active" id="bm-tab-front"
+                  onclick="bmSwitchView('front')">おなか側</button>
+                <button type="button" class="bm-pill-btn" id="bm-tab-back"
+                  onclick="bmSwitchView('back')">せなか側</button>
+              </div>
             </div>
+            <p class="bm-pill-hint">タップして前後を切り替えられます</p>
             <div class="bm-svg-area">
               <div class="bm-lr-indicator"><span>← 左</span><span>右 →</span></div>
 
