@@ -437,6 +437,22 @@
         <h2 class="font-semibold text-base tracking-wide">スタッフ確認画面</h2>
       </div>
       <div class="p-5">
+        <!-- クリニック表示バナー（認証後に色付きで表示される） -->
+        <div id="clinic-display-banner" class="hidden"
+          style="display:flex;align-items:center;justify-content:center;gap:12px;
+                 padding:16px 24px;border-radius:16px;border:2px solid;
+                 font-weight:700;letter-spacing:.05em;margin-bottom:24px;
+                 font-family:inherit;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <div style="display:flex;align-items:baseline;gap:6px;line-height:1.3;">
+            <span class="clinic-name-text" style="font-size:1.5rem;font-weight:700;">—</span>
+            <span style="font-size:1rem;font-weight:500;">で使用中</span>
+          </div>
+        </div>
         <div class="mb-4">
           <label class="block text-sm font-medium mb-1.5" style="color:var(--text);">カルテID</label>
           <input type="text" id="input_carte_id" placeholder="例：26-001"
@@ -1428,17 +1444,52 @@
     // ================================================================
     // ０ 認証・スタッフ画面
     // ================================================================
-    const CORRECT_PASSWORD = 'awaclinic';
+    const CLINIC_PASSWORDS = {
+      'awaclinic': {
+        id: 'awaclinic',
+        name: 'あわクリ',
+        color: '#7a4a8a',       // 紫系（テーマ色）
+        bgColor: '#f0e8f8',     // 背景（薄紫）
+        borderColor: '#c8b8e0'  // 枠線
+      },
+      'sousenclinic': {
+        id: 'sousenclinic',
+        name: 'そうせん',
+        color: '#34487a',       // ミッドネイビー
+        bgColor: '#ede8f5',     // 背景（淡ラベンダー）
+        borderColor: '#b8b0d8'  // 枠線（中ラベンダー）
+      }
+    };
 
     function checkPassword() {
       const pw = document.getElementById('auth-password-input').value;
-      if (pw === CORRECT_PASSWORD) {
+      const clinic = CLINIC_PASSWORDS[pw];
+
+      if (clinic) {
         sessionStorage.setItem('authenticated', 'true');
+        sessionStorage.setItem('clinic_id', clinic.id);
+        sessionStorage.setItem('clinic_name', clinic.name);
+        window._clinicId = clinic.id;
+        window._clinicName = clinic.name;
+
+        applyClinicDisplay(clinic);
+
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('staff-screen').classList.remove('hidden');
+        document.getElementById('auth-error').classList.add('hidden');
       } else {
         document.getElementById('auth-error').classList.remove('hidden');
       }
+    }
+
+    function applyClinicDisplay(clinic) {
+      const banner = document.getElementById('clinic-display-banner');
+      if (!banner) return;
+      banner.style.background = clinic.bgColor;
+      banner.style.borderColor = clinic.borderColor;
+      banner.style.color = clinic.color;
+      banner.querySelector('.clinic-name-text').textContent = clinic.name;
+      banner.classList.remove('hidden');
     }
 
     function startQuestionnaire() {
@@ -1519,6 +1570,15 @@
       if (sessionStorage.getItem('authenticated') === 'true') {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('staff-screen').classList.remove('hidden');
+      }
+
+      // クリニック情報のリストア（認証復元の直後に実行）
+      const cid = sessionStorage.getItem('clinic_id');
+      const cname = sessionStorage.getItem('clinic_name');
+      if (cid && cname && CLINIC_PASSWORDS[cid]) {
+        window._clinicId = cid;
+        window._clinicName = cname;
+        applyClinicDisplay(CLINIC_PASSWORDS[cid]);
       }
 
       // 出産日フィールドに未来日入力を防ぐ max を設定
@@ -1822,6 +1882,8 @@
       return {
         // --- 管理情報 ---
         submitted_at:            new Date().toISOString(),
+        clinic_id:               window._clinicId   || sessionStorage.getItem('clinic_id')   || 'unknown',
+        clinic_name:             window._clinicName || sessionStorage.getItem('clinic_name') || '',
         carte_id:                window._carteId || '',
         postnatal_days: (() => {
           const bd = document.querySelector('[name="birth_date"]')?.value;
@@ -2111,7 +2173,7 @@
       const name  = document.querySelector('[name="patient_name"]')?.value || window._carteId || '患者';
 
       const headers = [
-        '送信日時','カルテID','産後N日',
+        '送信日時','クリニックID','カルテID','産後N日',
         '身長(cm)','現在体重(kg)','妊娠前体重(kg)','第何子',
         '状況','妊娠週数','妊娠日数','出産日',
         '出産方法','分娩時間(h)','出産回数','会陰裂傷','会陰切開','硬膜外麻酔','出生体重(g)','授乳方法',
@@ -2149,7 +2211,7 @@
       }
 
       const row = [
-        stamp, data.carte_id, data.postnatal_days ?? '',
+        stamp, data.clinic_id ?? '', data.carte_id, data.postnatal_days ?? '',
         data.height, data.current_weight, data.pre_weight, data.child_number,
         tr(stageMap, data.stage),
         data.gestational_weeks, data.gestational_days, data.birth_date,
