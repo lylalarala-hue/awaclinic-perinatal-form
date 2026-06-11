@@ -1503,7 +1503,7 @@
       <!-- スタッフ操作エリア（折りたたみ） -->
       <div id="staff-action-area" class="hidden" style="margin-top:1rem;">
         <div class="space-y-3">
-          <button type="button" onclick="saveAll()"
+          <button type="button" id="save-all-btn" onclick="saveAll()"
             class="submit-btn w-full font-bold py-3.5 rounded-2xl shadow-md text-sm transition-all duration-150"
             style="min-height:48px;letter-spacing:.05em;">
             データの送信
@@ -1613,6 +1613,7 @@
         return;
       }
       window._carteId = id;
+      window._submissionId = _newSubmissionId(); // 来院1回ごとに発行（二重保存防止用）
       document.getElementById('staff-screen').classList.add('hidden');
       document.querySelector('header.app-header').classList.remove('hidden');
       document.querySelector('main').classList.remove('hidden');
@@ -2858,7 +2859,10 @@
     // GET（JSONP）と違い氏名・EPDS等が URL に載らず、長文でも URL 長制限にかからない。
     async function _saveViaDrivePost(payload) {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 45000);
+      // GAS は PDF を最大4枚生成するため混雑時は45秒を超えることがある。
+      // タイムアウトを早く打ち切ると「保存成功なのに失敗扱い→再送→二重保存」
+      // の原因になるため 90 秒に設定。
+      const timer = setTimeout(() => controller.abort(), 90000);
       try {
         const res = await fetch(DRIVE_SCRIPT_URL, {
           method: 'POST',
@@ -2891,8 +2895,8 @@
         var cbName = '_gasCb' + Date.now();
         var script = document.createElement('script');
         var timer  = setTimeout(function() {
-          cleanup(); reject(new Error('タイムアウト（45秒）'));
-        }, 45000);
+          cleanup(); reject(new Error('タイムアウト（90秒）'));
+        }, 90000);
         function cleanup() {
           clearTimeout(timer);
           delete window[cbName];
@@ -2907,10 +2911,53 @@
       });
     }
 
+    // ----------------------------------------------------------------
+    // 送信ID（二重保存防止）
+    //   ・「問診票を開始する」を押すたびに新しいIDを発行 → 来院ごとに別ID。
+    //     同じ患者さんが産前・産後に1回ずつ回答すれば、それぞれ別IDで
+    //     2件とも保存される（GAS側は同一IDの再送だけを弾く）。
+    //   ・通信エラー後の再送・JSONPフォールバックでは同じIDを使い回す
+    //     → サーバーに同じ送信が2回届いても1件しか保存されない。
+    // ----------------------------------------------------------------
+    function _newSubmissionId() {
+      return (crypto.randomUUID && crypto.randomUUID()) ||
+        'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+    }
+    function _getSubmissionId() {
+      if (!window._submissionId) window._submissionId = _newSubmissionId();
+      return window._submissionId;
+    }
+
+    let _saveInFlight = false; // 送信中フラグ（連打防止）
+    let _saveDone     = false; // この送信IDで送信成功済みか
+
+    function _setSaveBtn(label, disabled) {
+      const btn = document.getElementById('save-all-btn');
+      if (!btn) return;
+      btn.textContent = label;
+      btn.disabled = disabled;
+      btn.style.opacity = disabled ? '0.55' : '';
+    }
+
     async function saveAll() {
       if (!DRIVE_SCRIPT_URL) {
         _driveStatus('⚠ DRIVE_SCRIPT_URL が未設定です。', 'err'); return;
       }
+      if (_saveInFlight) return; // 送信中の連打は無視
+      if (_saveDone) {
+        // 送信成功後の再送は「修正の送り直し」とみなし、新しい送信IDで送る
+        // （新しい行・新しいPDFとして追加される。従来の挙動と同じ）
+        const ok = confirm(
+          'このデータは既に送信済みです。\n' +
+          '内容を修正して送り直す場合のみ OK を押してください。\n' +
+          '（スプレッドシートに新しい行として追加されます）'
+        );
+        if (!ok) return;
+        window._submissionId = _newSubmissionId();
+        _saveDone = false;
+      }
+      _saveInFlight = true;
+      _setSaveBtn('送信中…', true);
       _driveStatus('保存中… （10〜20秒かかります）', 'info');
       try {
         const formData = collectFormData();
@@ -2928,15 +2975,23 @@
         formData['pain_total_count'] = pts.filter(p => p && (p.pro || p.label)).length;
 
         const result = await _gasSend({
-          type: 'all', data: formData, pts: pts
+          type: 'all', submission_id: _getSubmissionId(), data: formData, pts: pts
         });
         if (result.success) {
-          _driveStatus('✅ スプレッドシートとDriveへの保存が完了しました', 'ok');
+          _saveDone = true;
+          _setSaveBtn('✅ 送信済み', false);
+          _driveStatus(result.deduped
+            ? '✅ このデータは既に保存済みです（二重保存を防止しました）'
+            : '✅ スプレッドシートとDriveへの保存が完了しました', 'ok');
         } else {
+          _setSaveBtn('データの送信', false);
           _driveStatus('❌ 保存失敗: ' + (result.error || '不明'), 'err');
         }
       } catch (e) {
-        _driveStatus('❌ エラー: ' + e.message, 'err');
+        _setSaveBtn('データの送信', false);
+        _driveStatus('❌ エラー: ' + e.message + '（もう一度「データの送信」を押してください。二重保存は自動で防止されます）', 'err');
+      } finally {
+        _saveInFlight = false;
       }
     }
 
@@ -3008,6 +3063,8 @@
           const draft = {
             ts:       Date.now(),
             carteId:  window._carteId,
+            subId:    window._submissionId || null, // リロード後も同じ送信IDを維持
+            sent:     _saveDone,
             phase:    document.getElementById('complete-view').classList.contains('hidden') ? 'form' : 'complete',
             fields:   _draftCollectFields(),
             bmPoints: _bmCollectData()
@@ -3050,6 +3107,8 @@
       _draftRestoring = true;
       try {
         window._carteId = draft.carteId;
+        window._submissionId = draft.subId || _newSubmissionId();
+        if (draft.sent) { _saveDone = true; _setSaveBtn('✅ 送信済み', false); }
         const carteInput = document.getElementById('input_carte_id');
         if (carteInput) carteInput.value = draft.carteId;
 
