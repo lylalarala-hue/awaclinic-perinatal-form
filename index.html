@@ -14,7 +14,7 @@
       --mauve-text:   #6B4F6B;
       --bg:           #FDFBFF;
       --text:         #4A4A4A;
-      --text-muted:   #8A7A8A;
+      --text-muted:   #6A5A6A;
       --border:       #EAD8EA;
       --hover-bg:     #F7F0F7;
       --card-bg:      #FFFFFF;
@@ -39,6 +39,8 @@
       color: var(--text);
       line-height: 1.7;
     }
+    /* iPadでの可読性：Tailwindの text-xs(12px) を 13px に底上げ */
+    .text-xs { font-size: 0.8125rem !important; }
 
     /* ===== セクションヘッダー ===== */
     .section-header {
@@ -176,6 +178,31 @@
       color: var(--mauve-text);
       font-weight: 600;
     }
+
+    /* EPDS 縦積みラジオ */
+    .epds-options { display: flex; flex-direction: column; gap: 6px; }
+
+    /* PGQ 用コンパクト選択肢 */
+    .pgq-radio-compact {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      font-size: 0.72rem; line-height: 1.35; color: var(--text);
+      cursor: pointer; background: #FAFAFA;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 8px 3px; min-height: 52px; text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pgq-radio-compact:has(input:checked) {
+      border-color: var(--mauve-deep);
+      background: var(--hover-bg);
+      color: var(--mauve-text);
+      font-weight: 600;
+    }
+    .pgq-radio-compact input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .pgq-option-row { display: flex; gap: 5px; }
+    .pgq-question-wrap { margin-bottom: 14px; }
+    .pgq-question-lbl { font-size: 0.875rem; font-weight: 500; color: var(--text); margin-bottom: 6px; display: block; }
 
     /* ===== 産後注記 ===== */
     .postnatal-notice {
@@ -317,6 +344,12 @@
       border-color: #C97070 !important;
       box-shadow: 0 0 0 2.5px rgba(201, 112, 112, 0.25) !important;
     }
+    .field-error-msg {
+      color: #C97070;
+      font-size: 0.78rem;
+      margin-top: 4px;
+      display: block;
+    }
 
     /* ===== モバイル対応 ===== */
     @media (max-width: 480px) {
@@ -344,6 +377,18 @@
     /* header の background はグラデーション（より濃いめ） */
     header.app-header {
       background: linear-gradient(135deg, #C0A0C0 0%, #D8BFD8 100%);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    #form-progress-bar {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 4px;
+      width: 0%;
+      background: linear-gradient(90deg, #B089B0, #7B5B8A);
+      transition: width 0.2s ease;
+      border-radius: 0 2px 2px 0;
     }
 
     /* ===== 身体図（インライン統合）===== */
@@ -385,8 +430,8 @@
     .bm-svg-area {
       display:flex; flex-direction:column; align-items:center; padding:10px 0 6px; background:#fdf8fd;
     }
-    .bm-svg-container { position:relative; cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent; }
-    .bm-svg-container svg { display:block; touch-action:manipulation; }
+    .bm-svg-container { position:relative; cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent; width:min(300px,80vw); }
+    .bm-svg-container svg { display:block; touch-action:manipulation; width:100%; height:auto; }
     .bm-body-part { cursor:pointer; transition:fill 0.12s,stroke 0.12s; }
     .bm-body-part:hover { fill:rgba(200,169,200,0.18)!important; stroke:rgba(176,137,176,0.55)!important; }
     .bm-body-part.bm-zone-selected {
@@ -401,7 +446,7 @@
     }
     .bm-pain-marker:active { transform:translate(-50%,-50%) scale(1.2); }
     .bm-lr-indicator {
-      display:flex; justify-content:space-between; width:210px;
+      display:flex; justify-content:space-between; width:min(300px,80vw);
       font-size:9px; color:var(--text-muted); letter-spacing:0.5px; padding:0 2px; margin-bottom:3px;
     }
     .bm-hint { font-size:0.875rem; color:var(--text-muted); text-align:center; margin-top:4px; padding:0 8px; }
@@ -511,7 +556,9 @@
   <header class="app-header py-4 px-4 shadow-sm hidden">
     <div class="max-w-2xl mx-auto text-center">
       <h1 class="text-xl font-bold tracking-wide" style="color:#5C3D5C;">産前産後 問診票</h1>
+      <p id="form-progress-label" style="font-size:0.72rem;color:#7B5B8A;margin-top:2px;opacity:0;transition:opacity 0.3s;"></p>
     </div>
+    <div id="form-progress-bar"></div>
   </header>
 
   <main class="max-w-2xl mx-auto px-4 pt-6 space-y-5 hidden" style="padding-bottom:100px;">
@@ -624,7 +671,8 @@
         <div id="field_birth_date" class="hidden fade-in">
           <label class="block text-sm font-medium mb-1.5 required" style="color:var(--text);">出産日</label>
           <input type="date" name="birth_date" id="birth_date_input"
-            class="rounded-lg border px-3 py-2.5 text-base" />
+            class="rounded-lg border px-3 py-2.5 text-base"
+            min="2015-01-01" />
         </div>
 
         <!-- 第何子か -->
@@ -841,7 +889,7 @@
 
               <!-- ========== 前面 SVG — 26 ゾーン ========== -->
               <div class="bm-svg-container" id="bm-body-front">
-                <svg width="210" height="423" viewBox="0 0 160 322" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 160 322" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <ellipse pointer-events="none" cx="80" cy="28" rx="22" ry="25" fill="#f0e0f0" stroke="var(--mauve-mid)" stroke-width="1.5"/>
                   <rect pointer-events="none" x="72" y="51" width="16" height="14" rx="4" fill="#f0e0f0" stroke="var(--mauve-mid)" stroke-width="1.5"/>
                   <path pointer-events="none" d="M42 65 Q80 60 118 65 L124 160 Q100 168 80 168 Q60 168 36 160 Z" fill="#f0e0f0" stroke="var(--mauve-mid)" stroke-width="1.5"/>
@@ -920,7 +968,7 @@
 
               <!-- ========== 後面 SVG — 20 ゾーン ========== -->
               <div class="bm-svg-container" id="bm-body-back" style="display:none">
-                <svg width="210" height="423" viewBox="0 0 160 322" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 160 322" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <ellipse pointer-events="none" cx="80" cy="28" rx="22" ry="25" fill="#f0e0f0" stroke="var(--mauve-mid)" stroke-width="1.5"/>
                   <ellipse pointer-events="none" cx="59" cy="30" rx="4" ry="5.5" fill="#f0e0f0" stroke="var(--mauve-mid)" stroke-width="1.3"/>
                   <ellipse pointer-events="none" cx="101" cy="30" rx="4" ry="5.5" fill="#f0e0f0" stroke="var(--mauve-mid)" stroke-width="1.3"/>
@@ -1026,6 +1074,7 @@
         <div>
           <p class="text-sm font-medium mb-1" style="color:var(--text);">選択された部位</p>
           <div id="bm-selection-summary" class="bm-summary">まだ選択されていません</div>
+          <p id="bm-limit-msg" class="field-error-msg" style="display:none;margin-top:6px;"></p>
         </div>
         <input type="hidden" name="body_map_data" id="body_map_data">
       </div>
@@ -1107,18 +1156,21 @@
             Q3. 全体として、あなたの毎日の生活は尿漏れのためにどれくらい損なわれていますか？
           </label>
           <p class="text-xs mb-3" style="color:var(--text-muted);">0（まったくない）〜 10（非常に）</p>
-          <div class="flex items-center gap-3">
-            <span class="text-xs" style="color:var(--text-muted);white-space:nowrap;">まったくない</span>
-            <input type="range" name="iciq_q3" id="iciq_q3_slider"
-              min="0" max="10" value="0"
-              class="w-full" style="accent-color:var(--mauve-deep);"
-              oninput="updateIciqSlider(this.value)" />
-            <span class="text-xs" style="color:var(--text-muted);white-space:nowrap;">非常に</span>
-            <span id="iciq_q3_val"
-              style="min-width:42px;text-align:center;font-weight:700;color:var(--mauve-deep);">
-              0 / 10
-            </span>
+          <div class="bm-btn-row" id="iciq_q3_btns">
+            <button type="button" class="bm-btn" id="iciq-q3-btn-0"  onclick="iciqSetQ3(0)"  style="--btn-color:#6db56d">0</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-1"  onclick="iciqSetQ3(1)"  style="--btn-color:#6db56d">1</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-2"  onclick="iciqSetQ3(2)"  style="--btn-color:#6db56d">2</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-3"  onclick="iciqSetQ3(3)"  style="--btn-color:#6db56d">3</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-4"  onclick="iciqSetQ3(4)"  style="--btn-color:#e0a030">4</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-5"  onclick="iciqSetQ3(5)"  style="--btn-color:#e0a030">5</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-6"  onclick="iciqSetQ3(6)"  style="--btn-color:#e0a030">6</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-7"  onclick="iciqSetQ3(7)"  style="--btn-color:#e03060">7</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-8"  onclick="iciqSetQ3(8)"  style="--btn-color:#e03060">8</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-9"  onclick="iciqSetQ3(9)"  style="--btn-color:#e03060">9</button>
+            <button type="button" class="bm-btn" id="iciq-q3-btn-10" onclick="iciqSetQ3(10)" style="--btn-color:#e03060">10</button>
           </div>
+          <input type="hidden" name="iciq_q3" id="iciq_q3_hidden" value="">
+          <div class="bm-score-label" id="iciq_q3_label">番号をタップして選んでください</div>
         </div>
         <!-- Q4: タイプ（複数選択） -->
         <div>
@@ -1263,7 +1315,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q1. 笑うことができたし、物事のおかしい面もわかった</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q1" value="0" class="custom-check w-4 h-4" />今まで通りにできた</label>
             <label class="radio-item"><input type="radio" name="epds_q1" value="1" class="custom-check w-4 h-4" />あまりできなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q1" value="2" class="custom-check w-4 h-4" />明らかにあまりできなかった</label>
@@ -1272,7 +1324,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q2. 物事を楽しみにして待つことができた</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q2" value="0" class="custom-check w-4 h-4" />今まで通りにできた</label>
             <label class="radio-item"><input type="radio" name="epds_q2" value="1" class="custom-check w-4 h-4" />あまりできなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q2" value="2" class="custom-check w-4 h-4" />かなりできなかった</label>
@@ -1281,7 +1333,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q3. 物事がうまくいかない時、自分を不必要に責めた</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q3" value="0" class="custom-check w-4 h-4" />いいえ、まったくそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q3" value="1" class="custom-check w-4 h-4" />あまりそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q3" value="2" class="custom-check w-4 h-4" />はい、時々そうだった</label>
@@ -1290,7 +1342,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q4. はっきりした理由もないのに不安になったり、心配した</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q4" value="0" class="custom-check w-4 h-4" />いいえ、まったくそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q4" value="1" class="custom-check w-4 h-4" />ほとんどそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q4" value="2" class="custom-check w-4 h-4" />はい、時々あった</label>
@@ -1299,7 +1351,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q5. はっきりした理由もないのに恐怖に襲われた</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q5" value="0" class="custom-check w-4 h-4" />いいえ、まったくそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q5" value="1" class="custom-check w-4 h-4" />いいえ、めったになかった</label>
             <label class="radio-item"><input type="radio" name="epds_q5" value="2" class="custom-check w-4 h-4" />はい、時々あった</label>
@@ -1308,7 +1360,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q6. することがたくさんあって大変だった</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q6" value="0" class="custom-check w-4 h-4" />いいえ、普段通りにやった</label>
             <label class="radio-item"><input type="radio" name="epds_q6" value="1" class="custom-check w-4 h-4" />いいえ、たいていうまくやった</label>
             <label class="radio-item"><input type="radio" name="epds_q6" value="2" class="custom-check w-4 h-4" />はい、いつものようにはできなかった</label>
@@ -1317,7 +1369,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q7. 不幸せなので、眠りにくかった</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q7" value="0" class="custom-check w-4 h-4" />いいえ、まったくそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q7" value="1" class="custom-check w-4 h-4" />あまりそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q7" value="2" class="custom-check w-4 h-4" />はい、時々そうだった</label>
@@ -1326,7 +1378,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q8. 悲しくなったり、惨めになった</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q8" value="0" class="custom-check w-4 h-4" />いいえ、まったくそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q8" value="1" class="custom-check w-4 h-4" />あまりそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q8" value="2" class="custom-check w-4 h-4" />はい、かなりそうだった</label>
@@ -1335,7 +1387,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q9. 不幸せなので、泣いていた</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q9" value="0" class="custom-check w-4 h-4" />いいえ、まったくそうではなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q9" value="1" class="custom-check w-4 h-4" />ときどきあった</label>
             <label class="radio-item"><input type="radio" name="epds_q9" value="2" class="custom-check w-4 h-4" />はい、かなりそうだった</label>
@@ -1344,7 +1396,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2" style="color:var(--text);">Q10. 自分を傷つけるという考えが浮かんだ</label>
-          <div class="flex flex-wrap gap-2">
+          <div class="epds-options">
             <label class="radio-item"><input type="radio" name="epds_q10" value="0" class="custom-check w-4 h-4" />まったくなかった</label>
             <label class="radio-item"><input type="radio" name="epds_q10" value="1" class="custom-check w-4 h-4" />めったになかった</label>
             <label class="radio-item"><input type="radio" name="epds_q10" value="2" class="custom-check w-4 h-4" />時々あった</label>
@@ -1377,7 +1429,7 @@
       <button type="button" onclick="submitForm()"
         class="submit-btn w-full font-bold py-4 rounded-2xl shadow-md text-base transition-all duration-150"
         style="min-height:56px;font-size:1.05rem;letter-spacing:.08em;">
-        記入完了・送信する
+        記入完了
       </button>
     </div>
 
@@ -1470,6 +1522,20 @@
             ">
             問診票の印刷
           </button>
+
+          <button type="button" onclick="startNewPatient()"
+            class="w-full font-bold py-3.5 rounded-2xl shadow-sm text-sm transition-all duration-150"
+            style="
+              min-height:48px;
+              border: 1.5px solid #c4b8cc;
+              background: #faf8fb;
+              color: #6a5a74;
+              letter-spacing:.05em;
+              font-family:inherit;
+              cursor:pointer;
+            ">
+            新しい患者さんを開始
+          </button>
         </div>
 
         <p id="drive-status" class="text-center text-xs pt-3"
@@ -1535,13 +1601,23 @@
     }
 
     function startQuestionnaire() {
-      const id = document.getElementById('input_carte_id').value.trim();
-      if (!id) { alert('カルテIDを入力してください'); return; }
+      const carteEl = document.getElementById('input_carte_id');
+      const id = carteEl.value.trim();
+      if (!id) {
+        carteEl.classList.add('field-error');
+        let err = carteEl.parentElement.querySelector('.field-error-msg');
+        if (!err) { err = document.createElement('p'); err.className = 'field-error-msg'; carteEl.insertAdjacentElement('afterend', err); }
+        err.textContent = 'カルテIDを入力してください';
+        carteEl.addEventListener('input', () => { carteEl.classList.remove('field-error'); err.remove(); }, { once: true });
+        carteEl.focus();
+        return;
+      }
       window._carteId = id;
       document.getElementById('staff-screen').classList.add('hidden');
       document.querySelector('header.app-header').classList.remove('hidden');
       document.querySelector('main').classList.remove('hidden');
       window.scrollTo({ top: 0 });
+      _draftSave();
     }
 
     // ================================================================
@@ -1603,8 +1679,17 @@
       ov.querySelector('img').src = img.src;
       ov.classList.add('open');
     }
-    function updateIciqSlider(val) {
-      document.getElementById('iciq_q3_val').textContent = val + ' / 10';
+    function iciqSetQ3(val) {
+      document.getElementById('iciq_q3_hidden').value = val;
+      for (let i = 0; i <= 10; i++) {
+        document.getElementById('iciq-q3-btn-' + i)?.classList.toggle('selected', i === val);
+      }
+      const lbl = document.getElementById('iciq_q3_label');
+      if (lbl) {
+        const desc = val <= 3 ? '影響は少ない' : val <= 6 ? '中程度の影響がある' : '日常生活に大きな影響がある';
+        lbl.innerHTML = `<strong>${val} / 10</strong> ― ${desc}`;
+      }
+      calcIciq();
     }
     function getEpdsVal(n) {
       const v = document.querySelector(`input[name="epds_q${n}"]:checked`)?.value;
@@ -1706,22 +1791,20 @@
         const addQuestions = (questions, options) => {
           questions.forEach(q => {
             const wrap = document.createElement('div');
-            wrap.className = 'mb-4';
-            const qLbl = document.createElement('label');
-            qLbl.className = 'block text-sm font-medium mb-2';
-            qLbl.style.color = 'var(--text)';
+            wrap.className = 'pgq-question-wrap';
+            const qLbl = document.createElement('span');
+            qLbl.className = 'pgq-question-lbl';
             qLbl.textContent = `Q${q.id}. ${q.text}`;
             wrap.appendChild(qLbl);
             const opts = document.createElement('div');
-            opts.className = 'flex flex-wrap gap-2';
+            opts.className = 'pgq-option-row';
             options.forEach(opt => {
               const lbl = document.createElement('label');
-              lbl.className = 'radio-item';
+              lbl.className = 'pgq-radio-compact';
               const inp = document.createElement('input');
               inp.type = 'radio';
               inp.name = `pgq_q${q.id}`;
               inp.value = opt.value;
-              inp.className = 'custom-check w-4 h-4';
               lbl.appendChild(inp);
               lbl.appendChild(document.createTextNode(opt.label));
               opts.appendChild(lbl);
@@ -1756,9 +1839,59 @@
       ['bm-body-front', 'bm-body-back'].forEach(cid => {
         const el   = document.getElementById(cid);
         const view = cid.replace('bm-body-', '');
-        el.addEventListener('click',      e => bmHandleTap(e, view));
-        el.addEventListener('touchstart', e => { e.preventDefault(); bmHandleTap(e, view); }, { passive: false });
+        el.addEventListener('click', e => bmHandleTap(e, view));
+        let _bmTSX = 0, _bmTSY = 0;
+        el.addEventListener('touchstart', e => {
+          _bmTSX = e.touches[0].clientX;
+          _bmTSY = e.touches[0].clientY;
+        }, { passive: true });
+        el.addEventListener('touchend', e => {
+          const t = e.changedTouches[0];
+          if (Math.abs(t.clientX - _bmTSX) < 10 && Math.abs(t.clientY - _bmTSY) < 10) bmHandleTap(e, view);
+        }, { passive: true });
       });
+
+      // 下書き自動保存：main 内のすべての入力を監視
+      const mainEl = document.querySelector('main');
+      mainEl.addEventListener('input',  _draftSave);
+      mainEl.addEventListener('change', _draftSave);
+
+      // iOS で数値キーボードを出す（inputmode 未設定の number 入力を一括設定）
+      document.querySelectorAll('input[type="number"]:not([inputmode])').forEach(el => {
+        el.setAttribute('inputmode', 'numeric');
+      });
+
+      // スクロール進捗バー
+      const _progressBar   = document.getElementById('form-progress-bar');
+      const _progressLabel = document.getElementById('form-progress-label');
+      const _sectionHeads  = [...document.querySelectorAll('main .section-header h2')];
+      window.addEventListener('scroll', () => {
+        const main = document.querySelector('main');
+        if (!main || main.classList.contains('hidden')) return;
+        const scrolled = window.scrollY;
+        const total    = document.documentElement.scrollHeight - window.innerHeight;
+        if (total <= 0) return;
+        const pct = Math.min(100, Math.round(scrolled / total * 100));
+        if (_progressBar) _progressBar.style.width = pct + '%';
+
+        // 現在のセクション名を表示
+        if (_progressLabel) {
+          let current = '';
+          for (const h of _sectionHeads) {
+            const rect = h.closest('.form-card, .section-header')?.getBoundingClientRect();
+            if (rect && rect.top <= 80) current = h.textContent.trim();
+          }
+          if (current) {
+            _progressLabel.textContent = current;
+            _progressLabel.style.opacity = '1';
+          } else {
+            _progressLabel.style.opacity = '0';
+          }
+        }
+      }, { passive: true });
+
+      // 前回の下書きがあれば復元（リロード・クラッシュ対策）
+      _draftRestore();
     });
 
     // ================================================================
@@ -1784,11 +1917,12 @@
     function bmHandleTap(e, view) {
       if (e.target.closest?.('.bm-pain-marker')) return;
       if (_bmPoints.length >= 5) {
-        alert('痛み部位は最大5か所まで選択できます。\nマーカーをタップすると削除できます。');
+        const lm = document.getElementById('bm-limit-msg');
+        if (lm) { lm.textContent = '痛み部位は最大5か所です。マーカーをタップすると削除できます。'; lm.style.display = 'block'; setTimeout(() => { lm.style.display = 'none'; }, 3000); }
         return;
       }
-      const cx   = e.touches?.[0].clientX ?? e.clientX;
-      const cy   = e.touches?.[0].clientY ?? e.clientY;
+      const cx   = e.changedTouches?.[0]?.clientX ?? e.touches?.[0]?.clientX ?? e.clientX;
+      const cy   = e.changedTouches?.[0]?.clientY ?? e.touches?.[0]?.clientY ?? e.clientY;
       const part = _bmClosest(document.elementFromPoint(cx, cy));
       if (!part) return;
       const rect = document.getElementById('bm-body-' + view).getBoundingClientRect();
@@ -1914,6 +2048,7 @@
       const data = _bmCollectData();
       window._bmPainPoints = data;
       document.getElementById('body_map_data').value = JSON.stringify(data);
+      _draftSave();
       // サマリー表示を自動更新
       const summary = document.getElementById('bm-selection-summary');
       if (!data.length) {
@@ -2097,13 +2232,13 @@
         iciq_q1: rv('iciq_q1') !== '' ? Number(rv('iciq_q1')) : null,
         iciq_q2: rv('iciq_q2') !== '' ? Number(rv('iciq_q2')) : null,
         iciq_q3: (() => {
-          const el = document.getElementById('iciq_q3_slider');
-          return el ? Number(el.value) : null;
+          const v = document.getElementById('iciq_q3_hidden')?.value;
+          return v !== '' && v !== undefined ? Number(v) : null;
         })(),
         iciq_score: (() => {
           const q1 = rv('iciq_q1');
           const q2 = rv('iciq_q2');
-          const q3 = document.getElementById('iciq_q3_slider')?.value;
+          const q3 = document.getElementById('iciq_q3_hidden')?.value;
           if (q1 === '' || q2 === '') return null;
           return Number(q1) + Number(q2) + Number(q3 || 0);
         })(),
@@ -2145,19 +2280,36 @@
     function _showFieldError(el, msg) {
       if (!el) return;
       el.classList.add('field-error');
-      el.addEventListener('input', () => el.classList.remove('field-error'), { once: true });
+      const prev = el.parentElement?.querySelector('.field-error-msg');
+      if (prev) prev.remove();
+      const err = document.createElement('p');
+      err.className = 'field-error-msg';
+      err.textContent = msg;
+      el.insertAdjacentElement('afterend', err);
+      el.addEventListener('input', () => {
+        el.classList.remove('field-error');
+        err.remove();
+      }, { once: true });
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       el.focus();
-      setTimeout(() => alert(msg), 150);
     }
 
     function _requireStage() {
       if (!document.querySelector('input[name="stage"]:checked')) {
         const stageSection = document.querySelector('.stage-card');
         if (stageSection) {
+          let err = stageSection.parentElement?.querySelector('.stage-error-msg');
+          if (!err) {
+            err = document.createElement('p');
+            err.className = 'field-error-msg stage-error-msg';
+            stageSection.insertAdjacentElement('afterend', err);
+          }
+          err.textContent = '「妊娠中」または「出産後」を選択してください。';
+          document.querySelectorAll('input[name="stage"]').forEach(r =>
+            r.addEventListener('change', () => err.remove(), { once: true })
+          );
           stageSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        setTimeout(() => alert('「妊娠中」または「出産後」を選択してください。'), 150);
         return false;
       }
       return true;
@@ -2202,6 +2354,7 @@
       cv.classList.remove('hidden');
       cv.classList.add('fade-in');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      _draftSave();
     }
 
     // ================================================================
@@ -2231,7 +2384,7 @@
         '送信日時','クリニックID','カルテID','産後N日',
         '身長(cm)','現在体重(kg)','妊娠前体重(kg)','第何子',
         '状況','妊娠週数','妊娠日数','出産日',
-        '出産方法','分娩時間(h)','出産回数','会陰裂傷','会陰切開','硬膜外麻酔','出生体重(g)','授乳方法',
+        '出産方法','分娩時間(h)','出産回数','会陰切開・裂傷','硬膜外麻酔','出生体重(g)','授乳方法',
         '妊娠前腰痛','妊娠中トラブル','尿失禁',
         '部位1','NRS1','誘発動作1','発症時期1',
         '部位2','NRS2','誘発動作2','発症時期2',
@@ -2256,6 +2409,12 @@
         return t;
       })();
 
+      const csvMhText = (() => {
+        const mhMap = { orthopedic: '整形外科疾患', gynecology: '婦人科疾患', urology: '泌尿器科疾患', internal: '内科疾患', psychiatric: '精神科・心療内科疾患', surgery: '手術歴あり', none: 'なし' };
+        const cats = data.medical_history_categories ? data.medical_history_categories.split(',').map(v => mhMap[v.trim()] || v).join('; ') : '';
+        return [cats, data.medical_history_detail].filter(Boolean).join(' / ') || '';
+      })();
+
       const bmCols = [];
       for (let i = 0; i < 5; i++) {
         const pt = pts[i];
@@ -2272,8 +2431,7 @@
         data.gestational_weeks, data.gestational_days, data.birth_date,
         trList(delivMap, data.delivery_method),
         data.delivery_hours, data.delivery_count,
-        tr(yesNoMap, data.perineal_laceration),
-        tr(yesNoMap, data.perineal_incision),
+        ({ yes: 'あり', no: 'なし', unknown: 'わからない' }[data.perineal_trauma] || ''),
         tr(yesNoMap, data.epidural),
         data.birth_weight,
         tr(bfMap,    data.breastfeeding),
@@ -2284,7 +2442,7 @@
         data.chief_complaint,
         tr(exMap,    data.exercise_habit),
         data.exercise_type, data.exercise_freq, data.exercise_duration,
-        data.medical_history,
+        csvMhText,
         tr(yesNoMap, data.support), data.support_who,
         data.pgq_gate ?? '', data.pgq_q19_skipped ?? '', data.pgq_activity_raw ?? '', data.pgq_activity_pct ?? '', data.pgq_symptom_raw ?? '', data.pgq_symptom_pct ?? '', data.pgq_total_raw ?? '', data.pgq_total_pct ?? '',
         data.iciq_q1 ?? '', data.iciq_q2 ?? '', data.iciq_q3 ?? '', data.iciq_score ?? '', data.iciq_type ?? '',
@@ -2458,6 +2616,12 @@
         return t || '　　　';
       })();
 
+      const mhText = (() => {
+        const mhMap = { orthopedic: '整形外科疾患', gynecology: '婦人科疾患', urology: '泌尿器科疾患', internal: '内科疾患', psychiatric: '精神科・心療内科疾患', surgery: '手術歴あり', none: 'なし' };
+        const cats = data.medical_history_categories ? data.medical_history_categories.split(',').map(v => mhMap[v.trim()] || v).join('、') : '';
+        return [cats, data.medical_history_detail].filter(Boolean).join(' / ') || '';
+      })();
+
       const painRows = Array.from({ length: 5 }, (_, i) => {
         const pt = pts[i];
         return `<tr>
@@ -2585,7 +2749,7 @@
           <div class="pv-sec-hd">5. 既往歴</div>
           <div class="pv-sec-bd">
             <span class="pv-lbl">これまでの怪我や手術など：</span>
-            <span class="pv-long">${data.medical_history||''}</span>
+            <span class="pv-long">${mhText}</span>
           </div>
         </div>
 
@@ -2689,7 +2853,38 @@
       el.style.color = colors[type || 'info'] || colors.info;
     }
 
-    // JSONP経由でGASに送信（CORSを完全回避）
+    // POST経由でGASに送信（推奨）
+    // text/plain で送るためプリフライトが発生せず、file:// からも動作する。
+    // GET（JSONP）と違い氏名・EPDS等が URL に載らず、長文でも URL 長制限にかからない。
+    async function _saveViaDrivePost(payload) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 45000);
+      try {
+        const res = await fetch(DRIVE_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    // 送信の入口：POST を試し、失敗したら JSONP にフォールバック
+    // （GAS 側に doPost が未デプロイでも壊れないようにするため）
+    async function _gasSend(payload) {
+      try {
+        return await _saveViaDrivePost(payload);
+      } catch (e) {
+        console.warn('POST送信に失敗したためJSONPで再送します:', e.message);
+        return _saveViaDriveJsonp(payload);
+      }
+    }
+
+    // JSONP経由でGASに送信（フォールバック用に維持）
     function _saveViaDriveJsonp(payload) {
       return new Promise(function(resolve, reject) {
         if (!DRIVE_SCRIPT_URL) { reject(new Error('URL未設定')); return; }
@@ -2732,7 +2927,7 @@
         }
         formData['pain_total_count'] = pts.filter(p => p && (p.pro || p.label)).length;
 
-        const result = await _saveViaDriveJsonp({
+        const result = await _gasSend({
           type: 'all', data: formData, pts: pts
         });
         if (result.success) {
@@ -2751,7 +2946,7 @@
       }
       _driveStatus('📤 CSV を Drive へ保存中…', 'info');
       try {
-        const result = await _saveViaDriveJsonp({
+        const result = await _gasSend({
           type: 'csv', data: collectFormData(), pts: window._bmPainPoints || []
         });
         if (result.success) _driveStatus('✅ CSV を Drive へ保存しました（' + (result.filename || '') + '）', 'ok');
@@ -2767,7 +2962,7 @@
       }
       _driveStatus('📤 PDF を Drive へ生成中… （10〜20秒かかります）', 'info');
       try {
-        const result = await _saveViaDriveJsonp({
+        const result = await _gasSend({
           type: 'pdf', data: collectFormData(), pts: window._bmPainPoints || []
         });
         if (result.success) _driveStatus('✅ PDF を Drive へ保存しました（' + (result.filename || '') + '）', 'ok');
@@ -2775,6 +2970,143 @@
       } catch (e) {
         _driveStatus('❌ エラー: ' + e.message, 'err');
       }
+    }
+
+    // ================================================================
+    // ⑪ 下書き自動保存（localStorage）— リロード・クラッシュ対策
+    //    送信フローには影響しない。スタッフが「新しい患者さんを開始」を
+    //    押すまで下書きは保持される。
+    // ================================================================
+    const DRAFT_KEY        = 'intake_draft_v1';
+    const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24時間で失効
+    let _draftTimer     = null;
+    let _draftRestoring = false;
+
+    function _draftCollectFields() {
+      const fields = {};
+      document.querySelectorAll('main [name]').forEach(el => {
+        const n = el.name;
+        if (!n || n === 'body_map_data') return; // 身体図は bmPoints で別管理
+        if (el.type === 'radio') {
+          if (el.checked) fields[n] = el.value;
+        } else if (el.type === 'checkbox') {
+          if (!Array.isArray(fields[n])) fields[n] = [];
+          if (el.checked) fields[n].push(el.value);
+        } else {
+          fields[n] = el.value;
+        }
+      });
+      return fields;
+    }
+
+    function _draftSave() {
+      if (_draftRestoring) return;
+      clearTimeout(_draftTimer);
+      _draftTimer = setTimeout(() => {
+        if (!window._carteId) return; // 問診開始前は保存しない
+        try {
+          const draft = {
+            ts:       Date.now(),
+            carteId:  window._carteId,
+            phase:    document.getElementById('complete-view').classList.contains('hidden') ? 'form' : 'complete',
+            fields:   _draftCollectFields(),
+            bmPoints: _bmCollectData()
+          };
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        } catch (e) { /* 容量超過等は無視（保存失敗してもアプリは継続） */ }
+      }, 300);
+    }
+
+    function _bmRestorePoint(saved) {
+      if (_bmPoints.length >= 5 || !saved?.label) return;
+      const id = _bmNextId++;
+      const pt = {
+        id, view: saved.view,
+        x_pct: saved.x_pct, y_pct: saved.y_pct,
+        label: saved.label, pro: saved.pro
+      };
+      _bmPoints.push(pt);
+      document.querySelectorAll(`#bm-body-${pt.view} .bm-body-part[data-label="${CSS.escape(pt.label)}"]`)
+        .forEach(el => el.classList.add('bm-zone-selected'));
+      _bmRenderMarker(pt);
+      _bmRenderCard(id, pt.label);
+      if (saved.score !== null && saved.score !== '' && saved.score !== undefined) {
+        bmSetScore(id, Number(saved.score));
+      }
+      const a = document.getElementById('bm-action-' + id); if (a) a.value = saved.aggravates || '';
+      const s = document.getElementById('bm-since-'  + id); if (s) s.value = saved.since || '';
+    }
+
+    function _draftRestore() {
+      let draft = null;
+      try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch (e) { return false; }
+      if (!draft || !draft.carteId) return false;
+      if (Date.now() - (draft.ts || 0) > DRAFT_MAX_AGE_MS) {
+        localStorage.removeItem(DRAFT_KEY);
+        return false;
+      }
+      if (sessionStorage.getItem('authenticated') !== 'true') return false;
+
+      _draftRestoring = true;
+      try {
+        window._carteId = draft.carteId;
+        const carteInput = document.getElementById('input_carte_id');
+        if (carteInput) carteInput.value = draft.carteId;
+
+        // フォーム値の復元
+        Object.entries(draft.fields || {}).forEach(([n, val]) => {
+          document.querySelectorAll(`main [name="${CSS.escape(n)}"]`).forEach(el => {
+            if (el.type === 'radio')         el.checked = (el.value === val);
+            else if (el.type === 'checkbox') el.checked = Array.isArray(val) && val.includes(el.value);
+            else                             el.value   = val ?? '';
+          });
+        });
+
+        // 条件付きセクションの表示状態を再計算
+        if (document.querySelector('input[name="stage"]:checked')) handleStageChange();
+        const otherCb = document.querySelector('input[name="pregnancy_trouble"][value="other"]');
+        if (otherCb) toggleOtherTrouble(otherCb);
+        const hasNonNoneMh = [...document.querySelectorAll('input[name="medical_history_categories"]:checked')]
+          .some(c => c.value !== 'none');
+        document.getElementById('medical_history_detail_wrap').classList.toggle('hidden', !hasNonNoneMh);
+        toggleExercise(document.querySelector('input[name="exercise_habit"]:checked')?.value === 'yes');
+        toggleSupport(document.querySelector('input[name="support"]:checked')?.value === 'yes');
+        togglePgqBody(document.querySelector('input[name="pgq_gate"]:checked')?.value === 'yes');
+        toggleIciq(document.querySelector('input[name="urine_leakage"]:checked')?.value === 'yes');
+        const q3v = document.getElementById('iciq_q3_hidden')?.value;
+        if (q3v !== '' && q3v !== undefined) iciqSetQ3(Number(q3v));
+
+        // 身体図の復元
+        (draft.bmPoints || []).forEach(_bmRestorePoint);
+        _bmUpdateData();
+
+        // 画面状態の復元
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('staff-screen').classList.add('hidden');
+        document.querySelector('header.app-header').classList.remove('hidden');
+        if (draft.phase === 'complete') {
+          document.querySelector('main').classList.add('hidden');
+          document.getElementById('complete-view').classList.remove('hidden');
+        } else {
+          document.querySelector('main').classList.remove('hidden');
+        }
+      } finally {
+        _draftRestoring = false;
+      }
+      return true;
+    }
+
+    // ================================================================
+    // ⑫ 新しい患者さんを開始（スタッフ操作）
+    // ================================================================
+    function startNewPatient() {
+      const ok = confirm(
+        '現在の問診データを消去して、新しい患者さんの入力を開始しますか？\n' +
+        '（「データの送信」がお済みかご確認ください）'
+      );
+      if (!ok) return;
+      localStorage.removeItem(DRAFT_KEY);
+      location.reload(); // 認証は sessionStorage に残るためスタッフ画面から再開
     }
   </script>
 
