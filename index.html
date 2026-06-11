@@ -1815,7 +1815,7 @@
         };
         addQuestions(PGQ_QUESTIONS_A, PGQ_OPTIONS_A);
         // Q19 スキップ注記
-        const q19el = document.querySelector('[name="pgq_q19"]')?.closest('.mb-4');
+        const q19el = document.querySelector('[name="pgq_q19"]')?.closest('.pgq-question-wrap');
         if (q19el) {
           const q19note = document.createElement('p');
           q19note.style.cssText = 'font-size:10px;color:#888;margin-top:2px;';
