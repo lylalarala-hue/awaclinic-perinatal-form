@@ -255,7 +255,7 @@
 
     /* ===== 印刷 ===== */
     @media print {
-      @page { size: A4 portrait; margin: 15mm 12mm; }
+      @page { size: A4 portrait; margin: 10mm 12mm; }
       body > *:not(#print-view) { display: none !important; }
       #print-view { display: block !important; }
       #print-view.show { position: static !important; padding-top: 12mm !important; }
@@ -278,24 +278,24 @@
       overflow-y: auto;
       padding: 60px 12mm 12mm;
       font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
-      font-size: 11px;
+      font-size: 10px;
       color: #222;
-      line-height: 1.6;
+      line-height: 1.4;
     }
     #print-view .pv-title {
-      font-size: 20px; font-weight: bold; text-align: center;
-      margin-bottom: 10px; letter-spacing: .1em;
+      font-size: 18px; font-weight: bold; text-align: center;
+      margin-bottom: 6px; letter-spacing: .1em;
     }
     #print-view .pv-sec {
-      margin-bottom: 7px; border: 0.5px solid #bbb;
+      margin-bottom: 3px; border: 0.5px solid #bbb;
       border-radius: 3px; overflow: hidden;
     }
     #print-view .pv-sec-hd {
-      background: #e8d8f0; padding: 3px 8px;
+      background: #e8d8f0; padding: 2px 8px;
       font-weight: 700; font-size: 10px; color: #4a2a6a;
     }
-    #print-view .pv-sec-bd { padding: 5px 8px; }
-    #print-view .pv-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 4px; }
+    #print-view .pv-sec-bd { padding: 3px 8px; }
+    #print-view .pv-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 2px; }
     #print-view .pv-fld { display: inline-flex; align-items: baseline; gap: 3px; }
     #print-view .pv-lbl { font-size: 9px; color: #777; white-space: nowrap; }
     #print-view .pv-val {
@@ -308,9 +308,10 @@
       border-bottom: 0.5px solid #888; min-height: 16px;
       padding: 0 2px; font-size: 11px; margin-top: 2px;
     }
-    #print-view .pv-body-area { display: flex; gap: 8px; align-items: flex-start; }
+    #print-view .pv-body-area { display: flex; gap: 6px; align-items: flex-start; }
     #print-view .pv-svgs { display: flex; gap: 4px; flex-shrink: 0; }
-    #print-view .pv-svgs svg { width: 108px !important; height: 217px !important; }
+    #print-view .pv-svgs .bm-svg-container { width: 90px !important; flex: 0 0 auto; position: relative; }
+    #print-view .pv-svgs svg { width: 90px !important; height: auto !important; display: block; }
     #print-view .pv-pain-tbl {
       flex: 1; border-collapse: collapse; font-size: 9.5px; width: 100%;
     }
@@ -319,8 +320,8 @@
       padding: 3px 4px; font-size: 8.5px; text-align: center;
     }
     #print-view .pv-pain-tbl td {
-      border: 0.5px solid #ccc; padding: 4px 4px;
-      vertical-align: top; min-height: 20px;
+      border: 0.5px solid #ccc; padding: 2px 3px;
+      vertical-align: top; min-height: 18px;
     }
     #print-view .pv-pain-tbl td:first-child { text-align: center; font-weight: 700; width: 16px; }
 
@@ -2560,22 +2561,23 @@
       const pv = document.getElementById('print-view');
       const css = `
         @page{size:A4 portrait;margin:15mm 12mm;}
-        body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;font-size:11px;color:#222;line-height:1.6;margin:0;padding:12mm;}
-        .pv-title{font-size:20px;font-weight:bold;text-align:center;margin-bottom:10px;letter-spacing:.1em;}
-        .pv-sec{margin-bottom:7px;border:0.5px solid #bbb;border-radius:3px;overflow:hidden;}
-        .pv-sec-hd{background:#e8d8f0;padding:3px 8px;font-weight:700;font-size:10px;color:#4a2a6a;}
-        .pv-sec-bd{padding:5px 8px;}
-        .pv-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:4px;}
+        body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;font-size:10px;color:#222;line-height:1.4;margin:0;padding:10mm;}
+        .pv-title{font-size:18px;font-weight:bold;text-align:center;margin-bottom:6px;letter-spacing:.1em;}
+        .pv-sec{margin-bottom:3px;border:0.5px solid #bbb;border-radius:3px;overflow:hidden;}
+        .pv-sec-hd{background:#e8d8f0;padding:2px 8px;font-weight:700;font-size:10px;color:#4a2a6a;}
+        .pv-sec-bd{padding:3px 8px;}
+        .pv-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:2px;}
         .pv-fld{display:inline-flex;align-items:baseline;gap:3px;}
         .pv-lbl{font-size:9px;color:#777;white-space:nowrap;}
         .pv-val{font-size:11px;font-weight:500;border-bottom:0.5px solid #888;min-width:36px;padding:0 2px;display:inline-block;}
         .pv-long{display:block;width:100%;border-bottom:0.5px solid #888;min-height:16px;padding:0 2px;font-size:11px;margin-top:2px;}
-        .pv-body-area{display:flex;gap:8px;align-items:flex-start;}
-        .pv-svgs{display:flex;gap:4px;fslex-shrink:0;}
-        .pv-svgs svg{width:108px!important;height:217px!important;}
+        .pv-body-area{display:flex;gap:6px;align-items:flex-start;}
+        .pv-svgs{display:flex;gap:4px;flex-shrink:0;}
+        .pv-svgs .bm-svg-container{width:90px!important;flex:0 0 auto;position:relative;}
+        .pv-svgs svg{width:90px!important;height:auto!important;display:block;}
         .pv-pain-tbl{flex:1;border-collapse:collapse;font-size:9.5px;width:100%;}
         .pv-pain-tbl th{background:#f0e8f8;border:0.5px solid #ccc;padding:3px 4px;font-size:8.5px;text-align:center;}
-        .pv-pain-tbl td{border:0.5px solid #ccc;padding:4px 4px;vertical-align:top;}
+        .pv-pain-tbl td{border:0.5px solid #ccc;padding:2px 3px;vertical-align:top;}
         .pv-pain-tbl td:first-child{text-align:center;font-weight:700;width:16px;}
         .bm-svg-container{position:relative;}
         .bm-body-part{fill:rgba(200,169,200,0.08);stroke:rgba(180,150,180,0.3);}
@@ -2823,10 +2825,11 @@
         clone.id            = 'pv-clone-' + side;
         clone.style.display = 'block';
         clone.style.position = 'relative';
+        clone.style.width = '90px';
         const svg = clone.querySelector('svg');
-        if (svg) { svg.setAttribute('width', '108'); svg.setAttribute('height', '217'); }
+        if (svg) { svg.setAttribute('width', '90'); svg.removeAttribute('height'); }
         clone.querySelectorAll('.bm-pain-marker').forEach(m => {
-          m.style.width = '16px'; m.style.height = '16px'; m.style.fontSize = '0.58rem';
+          m.style.width = '14px'; m.style.height = '14px'; m.style.fontSize = '0.5rem'; m.style.borderWidth = '1.5px';
         });
         slot.appendChild(clone);
       });
